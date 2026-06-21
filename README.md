@@ -23,14 +23,18 @@ Install the following on the host:
 
 - **`CaptureAgeSetup.exe`** placed next to `script.sh` (or pointed at via the
   `INSTALLER` env var). Grab the latest from
-  <https://www.captureage.com/>.
+  <https://www.captureage.com/>. The installer can live anywhere — the
+  `install` step copies it into the prefix before running it, so the Flatpak
+  protontricks sandbox doesn't need access to its source directory.
 
 ## Setup
 
 From this directory:
 
 ```sh
-# 1. Install .NET 8 Desktop Runtime into the AoE2:DE Proton prefix.
+# 1. Install .NET 8 Desktop Runtime into the AoE2:DE Proton prefix,
+#    and symlink the game files to the Windows-style path Capture Age
+#    expects (otherwise it'll load with no audio/textures).
 ./script.sh prep
 
 # 2. Run the Capture Age installer inside that prefix. Click through the

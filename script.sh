@@ -16,10 +16,9 @@ DRIVE_C="${PREFIX}/drive_c"
 
 # Common install locations Capture Age may end up at.
 CEDE_CANDIDATES=(
-  "${DRIVE_C}/users/steamuser/AppData/Local/Programs/capture-age/Capture Age.exe"
-  "${DRIVE_C}/users/steamuser/AppData/Local/Programs/Capture Age/Capture Age.exe"
-  "${DRIVE_C}/Program Files/Capture Age/Capture Age.exe"
-  "${DRIVE_C}/Program Files (x86)/Capture Age/Capture Age.exe"
+  "${DRIVE_C}/users/steamuser/AppData/Local/Programs/CaptureAge/CaptureAge.exe"
+  "${DRIVE_C}/Program Files/CaptureAge/CaptureAge.exe"
+  "${DRIVE_C}/Program Files (x86)/CaptureAge/CaptureAge.exe"
 )
 
 # When Steam launches us as a non-Steam shortcut under Flatpak Steam, we're
@@ -84,10 +83,30 @@ find_cede_exe() {
   done
 }
 
+link_aoe2de() {
+  local src="${STEAMBASE}/steamapps/common/AoE2DE"
+  local link_dir="${DRIVE_C}/Program Files (x86)/Steam/steamapps/common"
+  local link="${link_dir}/AoE2DE"
+  if [[ ! -d "$src" ]]; then
+    echo "WARNING: AoE2:DE install not found at $src — skipping link." >&2
+    return
+  fi
+  mkdir -p "$link_dir"
+  if [[ -L "$link" || -e "$link" ]]; then
+    return
+  fi
+  ln -s "$src" "$link"
+  echo "Linked $link -> $src"
+}
+
 cmd_prep() {
   require_prefix
   require_protontricks
   protontricks "${AOE2DE_APPID}" -q dotnet8
+  # Capture Age looks for AoE2:DE under the Windows-default Steam path it
+  # finds in the prefix registry. Symlink that path to the real install so
+  # it can load .pck audio banks and other game assets.
+  link_aoe2de
 }
 
 cmd_install() {
@@ -98,7 +117,14 @@ cmd_install() {
     echo "Set INSTALLER=<path> or place CaptureAgeSetup.exe next to this script." >&2
     exit 1
   fi
-  protontricks_launch --appid "${AOE2DE_APPID}" "$INSTALLER"
+  # The protontricks Flatpak sandbox can't read arbitrary host paths (e.g.
+  # ~/git), so stage the installer inside the prefix where it has access.
+  local staged_dir="${DRIVE_C}/users/steamuser/Temp"
+  local staged="${staged_dir}/$(basename "$INSTALLER")"
+  mkdir -p "$staged_dir"
+  cp -f "$INSTALLER" "$staged"
+  protontricks_launch --appid "${AOE2DE_APPID}" "$staged"
+  rm -f "$staged"
 }
 
 cmd_run() {
