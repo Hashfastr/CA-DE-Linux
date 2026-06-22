@@ -13,7 +13,7 @@ This is AI written, although it's small enough to be auditable and I couldn't fi
 Basically it sets up dotnet via proton and installs ce:de to a common directory for the existing AoE2 install.
 The script will run the executable via proton and will talk to the existing process for AoE2
 
-AoE2 needs to be running or else capture age poops itself, it can't launch it itself, I assume due to the windows launching an elf file.
+AoE2 needs to be running or else capture age poops itself, it can't launch it itself.
 Otherwise works well.
 
 I use flatpak steam so native might require tinkering, if you find something, let me know, I don't trust claude to write code for something it cannot get feedback from.
